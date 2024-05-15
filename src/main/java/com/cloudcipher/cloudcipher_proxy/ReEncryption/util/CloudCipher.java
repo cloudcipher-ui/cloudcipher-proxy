@@ -7,7 +7,7 @@ public class CloudCipher {
     AONTH aonth;
     Permutation perm;
     KeyGenerator g;
-    int[] iv;
+    public int[] iv;
 
     public CloudCipher() throws Exception {
         aonth = new AONTH();

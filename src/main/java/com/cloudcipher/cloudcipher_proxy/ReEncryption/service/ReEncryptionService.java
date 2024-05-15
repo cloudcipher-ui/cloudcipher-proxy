@@ -17,13 +17,8 @@ public class ReEncryptionService {
     @Value("${secret-key}")
     private String secretKey;
 
-    private final CloudCipher cc;
 
-    public ReEncryptionService() throws Exception {
-        cc = new CloudCipher();
-    }
-
-    public byte[] reEncrypt(MultipartFile file, MultipartFile iv, MultipartFile rg, String key) throws Exception {
+    public byte[] reEncrypt(MultipartFile file, MultipartFile iv, String rg, String key) throws Exception {
         if (!key.equals(secretKey)) {
             throw new InvalidSecretKeyException("Invalid secret key.");
         }
@@ -31,12 +26,15 @@ public class ReEncryptionService {
         byte[] fileBytes = file.getBytes();
         byte[] ivBytes = iv.getBytes();
 
-        cc.setIV(ivBytes);
+        CloudCipher cc = new CloudCipher();
+        for (int i = 0; i < ivBytes.length; i++) {
+            cc.iv[i] = ivBytes[i];
+        }
         long[][] c = byteToLongs(fileBytes);
+        int[][] rgData = Utility.parseRG(rg);
 
-        int[][] rgData = Utility.byteArrayToIntegerArray(rg.getBytes(), 16);
+        long[][] reEncrypted = cc.reEncrypt(rgData[0], rgData[1], rgData[2], rgData[3], c);
 
-        long[][] reencrypted = cc.reEncrypt(rgData[0], rgData[1], rgData[2], rgData[3], c);
-        return longsToByte(reencrypted);
+        return longsToByte(reEncrypted);
     }
 }

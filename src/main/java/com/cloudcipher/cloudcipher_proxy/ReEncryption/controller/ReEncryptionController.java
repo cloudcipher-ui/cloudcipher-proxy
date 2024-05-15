@@ -18,7 +18,7 @@ public class ReEncryptionController {
     private ReEncryptionService reEncryptionService;
 
     @PostMapping("/")
-    public @ResponseBody byte[] reEncrypt(@RequestParam MultipartFile file, @RequestParam MultipartFile iv, @RequestParam MultipartFile rg, @RequestParam String key) {
+    public @ResponseBody byte[] reEncrypt(@RequestParam MultipartFile file, @RequestParam MultipartFile iv, @RequestParam String rg, @RequestParam String key) {
         try {
             return reEncryptionService.reEncrypt(file, iv, rg, key);
         } catch (Exception e) {

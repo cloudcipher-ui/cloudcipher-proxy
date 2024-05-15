@@ -1,11 +1,5 @@
 package com.cloudcipher.cloudcipher_proxy.ReEncryption.util;
 
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
 public class Utility {
 
     private static final int BLOCK_SIZE = 16;
@@ -24,27 +18,25 @@ public class Utility {
         return longs;
     }
 
-    public static byte[] longsToByte(long[][] longs) {
-        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-            for (long[] aLong : longs) {
-                for (int j = 0; j < 2; j++) {
-                    byte[] temp = {
-                            (byte) ((aLong[j] >> 56) & 0xFF),
-                            (byte) ((aLong[j] >> 48) & 0xFF),
-                            (byte) ((aLong[j] >> 40) & 0xFF),
-                            (byte) ((aLong[j] >> 32) & 0xFF),
-                            (byte) ((aLong[j] >> 24) & 0xFF),
-                            (byte) ((aLong[j] >> 16) & 0xFF),
-                            (byte) ((aLong[j] >> 8) & 0xFF),
-                            (byte) ((aLong[j]) & 0xFF)
-                    };
-                    byteArrayOutputStream.write(temp);
-                }
+    public static byte[] longsToByte(long[][] arr) {
+        int numBlocks = arr.length;
+        byte[] fileBytes = new byte[numBlocks * BLOCK_SIZE];
+        for (int i = 0; i < arr.length; i++) {
+            for (int j = 0; j < 2; j++) {
+                byte[] temp = {
+                    (byte) ((arr[i][j] >> 56) & 0xFF),
+                    (byte) ((arr[i][j] >> 48) & 0xFF),
+                    (byte) ((arr[i][j] >> 40) & 0xFF),
+                    (byte) ((arr[i][j] >> 32) & 0xFF),
+                    (byte) ((arr[i][j] >> 24) & 0xFF),
+                    (byte) ((arr[i][j] >> 16) & 0xFF),
+                    (byte) ((arr[i][j] >> 8) & 0xFF),
+                    (byte) (arr[i][j] & 0xFF)
+                };
+                System.arraycopy(temp, 0, fileBytes, i * BLOCK_SIZE + j * 8, 8);
             }
-            return byteArrayOutputStream.toByteArray();
-        } catch (IOException e) {
-            return null;
         }
+        return fileBytes;
     }
 
     public static byte[] hexToBytes(String hexString) {
@@ -59,17 +51,17 @@ public class Utility {
         return byteArray;
     }
 
-    public static int[][] byteArrayToIntegerArray(byte[] bytes, int blockSize) {
-        int numOfBlocks = bytes.length / blockSize;
-        int[][] array = new int[numOfBlocks][blockSize];
-        for (int i = 0; i < numOfBlocks; i++) {
-            byte[] temp = new byte[blockSize];
-            System.arraycopy(bytes, i * blockSize, temp, 0, blockSize);
-            for (int j = 0; j < blockSize; j++) {
-                // Convert the byte to integer, considering it as unsigned
-                array[i][j] = temp[j] & 0xFF;
+    public static int[][] parseRG(String rg) {
+        String[] rgHexs = rg.split(" ");
+
+        int[][] rgData = new int[rgHexs.length][];
+        for (int i = 0; i < rgHexs.length; i++) {
+            byte[] temp = hexToBytes(rgHexs[i]);
+            rgData[i] = new int[temp.length];
+            for (int j = 0; j < temp.length; j++) {
+                rgData[i][j] = temp[j] & 0xFF;
             }
         }
-        return array;
+        return rgData;
     }
 }
